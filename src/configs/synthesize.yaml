@@ -1,9 +1,9 @@
 defaults:
-  - model: baseline
+  - model: fast_speech2_hifigan
   - metrics: example
   - datasets: example_eval # we do not want to run inference on training data
   - dataloader: example
-  - transforms: example
+  - transforms: no_transforms
   - _self_
 inferencer:
   device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)

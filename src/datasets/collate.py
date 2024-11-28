@@ -17,9 +17,10 @@ def collate_fn(dataset_items: list[dict]):
     result_batch = {}
 
     # example of collate_fn
-    result_batch["data_object"] = torch.vstack(
-        [elem["data_object"] for elem in dataset_items]
+    result_batch["audio"] = torch.nn.utils.rnn.pad_sequence(
+        [elem["audio"].squeeze() for elem in dataset_items],
+        batch_first=True,
     )
-    result_batch["labels"] = torch.tensor([elem["labels"] for elem in dataset_items])
+    result_batch["wav_path"] = [elem["wav_path"] for elem in dataset_items]
 
     return result_batch

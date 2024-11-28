@@ -1,0 +1,8 @@
+train:
+  _target_: src.datasets.LJspeechDataset
+  part: "train"
+  target_sr: 22050
+val:
+  _target_: src.datasets.LJspeechDataset
+  part: "val"
+  target_sr: 22050

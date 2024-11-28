@@ -3,6 +3,7 @@ import random
 from typing import List
 
 import torch
+import torchaudio
 from torch.utils.data import Dataset
 
 logger = logging.getLogger(__name__)
@@ -18,13 +19,19 @@ class BaseDataset(Dataset):
     """
 
     def __init__(
-        self, index, limit=None, shuffle_index=False, instance_transforms=None
+        self,
+        index,
+        target_sr: int = 22050,
+        limit=None,
+        shuffle_index=False,
+        instance_transforms=None,
     ):
         """
         Args:
             index (list[dict]): list, containing dict for each element of
                 the dataset. The dict has required metadata information,
                 such as label and object path.
+            target_sr (int): supported sample rate.
             limit (int | None): if not None, limit the total number of elements
                 in the dataset to 'limit' elements.
             shuffle_index (bool): if True, shuffle the index. Uses python
@@ -56,11 +63,10 @@ class BaseDataset(Dataset):
                 (a single dataset element).
         """
         data_dict = self._index[ind]
-        data_path = data_dict["path"]
-        data_object = self.load_object(data_path)
-        data_label = data_dict["label"]
+        wav_path = data_dict["path"]
+        audio = self.load_audio(wav_path)
 
-        instance_data = {"data_object": data_object, "labels": data_label}
+        instance_data = {"audio": audio, "wav_path": wav_path}
         instance_data = self.preprocess_data(instance_data)
 
         return instance_data
@@ -71,17 +77,24 @@ class BaseDataset(Dataset):
         """
         return len(self._index)
 
-    def load_object(self, path):
+    def load_audio(self, path):
         """
         Load object from disk.
 
         Args:
-            path (str): path to the object.
+            path (str): path to the audio.
         Returns:
-            data_object (Tensor):
+            audio_tensor (Tensor): audio tensor.
         """
-        data_object = torch.load(path)
-        return data_object
+
+        audio_tensor, sr = torchaudio.load(path)
+        audio_tensor = audio_tensor[0:1, :]  # remove all channels but the first
+
+        target_sr = self.target_sr
+        if sr != target_sr:
+            audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
+
+        return audio_tensor
 
     def preprocess_data(self, instance_data):
         """

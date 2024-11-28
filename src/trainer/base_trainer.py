@@ -34,12 +34,12 @@ class BaseTrainer:
         """
         Args:
             model (nn.Module): PyTorch model.
-            criterion (nn.Module): loss function for model training.
+            criterions (nn.Module): loss functions for model training.
             metrics (dict): dict with the definition of metrics for training
                 (metrics[train]) and inference (metrics[inference]). Each
                 metric is an instance of src.metrics.BaseMetric.
-            optimizer (Optimizer): optimizer for the model.
-            lr_scheduler (LRScheduler): learning rate scheduler for the
+            optimizers (Optimizer): optimizers for the model.
+            lr_schedulers (LRScheduler): learning rate schedulers for the
                 optimizer.
             config (DictConfig): experiment config containing training config.
             device (str): device for tensors and model.
@@ -67,9 +67,9 @@ class BaseTrainer:
         self.log_step = config.trainer.get("log_step", 50)
 
         self.model = model
-        self.criterion = criterion
-        self.optimizer = optimizer
-        self.lr_scheduler = lr_scheduler
+        self.d_criterion, self.g_criterion = criterion
+        self.d_optimizer, self.g_optimizer = optimizer
+        self.d_lr_scheduler, self.g_lr_scheduler = lr_scheduler
         self.batch_transforms = batch_transforms
 
         # define dataloaders

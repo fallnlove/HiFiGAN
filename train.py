@@ -42,13 +42,23 @@ def main(config):
     logger.info(model)
 
     # get function handles of loss and metrics
-    loss_function = instantiate(config.loss_function).to(device)
+    d_loss_function = instantiate(config.d_loss_function).to(device)
+    g_loss_function = instantiate(config.g_loss_function).to(device)
     metrics = instantiate(config.metrics)
 
     # build optimizer, learning rate scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = instantiate(config.optimizer, params=trainable_params)
-    lr_scheduler = instantiate(config.lr_scheduler, optimizer=optimizer)
+    d_trainable_params = list(
+        filter(lambda p: p.requires_grad, model.wav_generator.mpd.parameters())
+    ) + list(filter(lambda p: p.requires_grad, model.wav_generator.msd.parameters()))
+    g_trainable_params = filter(
+        lambda p: p.requires_grad, model.wav_generator.generator.parameters()
+    )
+
+    d_optimizer = instantiate(config.d_optimizer, params=d_trainable_params)
+    g_optimizer = instantiate(config.g_optimizer, params=g_trainable_params)
+
+    d_lr_scheduler = instantiate(config.d_lr_scheduler, optimizer=d_optimizer)
+    g_lr_scheduler = instantiate(config.g_lr_scheduler, optimizer=g_optimizer)
 
     # epoch_len = number of iterations for iteration-based training
     # epoch_len = None or len(dataloader) for epoch-based training
@@ -56,10 +66,10 @@ def main(config):
 
     trainer = Trainer(
         model=model,
-        criterion=loss_function,
+        criterion=(d_loss_function, g_loss_function),
         metrics=metrics,
-        optimizer=optimizer,
-        lr_scheduler=lr_scheduler,
+        optimizer=(d_optimizer, g_optimizer),
+        lr_scheduler=(d_lr_scheduler, g_lr_scheduler),
         config=config,
         device=device,
         dataloaders=dataloaders,

@@ -1,0 +1,43 @@
+defaults:
+  - model: hifigan
+  - writer: wandb
+  - metrics: no_metrics
+  - datasets: lj_speech
+  - dataloader: example
+  - transforms: no_transforms
+  - _self_
+d_optimizer:
+  _target_: torch.optim.AdamW
+  lr: 2e-4
+  weight_decay: 0.01
+g_optimizer:
+  _target_: torch.optim.AdamW
+  lr: 2e-4
+  weight_decay: 0.01
+d_lr_scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  gamma: 0.999
+  step_size: ${trainer.epoch_len}
+g_lr_scheduler:
+  _target_: torch.optim.lr_scheduler.StepLR
+  gamma: 0.999
+  step_size: ${trainer.epoch_len}
+d_loss_function:
+  _target_: src.loss.DiscriminatorLoss
+g_loss_function:
+  _target_: src.loss.GeneratorLoss
+  l_fm: 2
+  l_mel: 45
+trainer:
+  log_step: 50
+  n_epochs: 1000
+  epoch_len: 500
+  device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)
+  resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
+  device: auto # device name or "auto"
+  override: False # if True, will override the previous run with the same name
+  monitor: "off" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
+  save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
+  early_stop: ${trainer.n_epochs} # epochs for early stopping
+  save_dir: "saved"
+  seed: 42
