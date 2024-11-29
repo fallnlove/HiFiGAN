@@ -18,23 +18,25 @@ class GeneratorLoss(nn.Module):
 
     def forward(
         self,
-        gt_feat: Tensor,
         gen_res: Tensor,
+        gt_feat: Tensor,
         gen_feat: Tensor,
-        generated_wav: Tensor,
         gt_melspectrogram: Tensor,
+        gen_melspectrogram: Tensor,
         **batch
     ):
         """
         Generator loss
 
         Args:
-            gt_res (Tensor): discriminator output for ground truth.
             gen_res (Tensor): discriminator output for generated.
+            gt_feat (Tensor): discriminator features of ground truth.
+            gen_feat (Tensor): discriminator features of generated.
+            gt_melspectrogram (Tensor): melspectrogram of ground truth wav.
+            gen_melspectrogram (Tensor): melspectrogram of generated wav.
         Returns:
-            loss (dict): dict containing calculated loss discriminator loss.
+            loss (dict): dict containing calculated loss generator loss.
         """
-        gen_melspectrogram = self.melspec(generated_wav.squeeze(1))
 
         loss_mel = self.l1(gt_melspectrogram, gen_melspectrogram)
 
@@ -49,4 +51,4 @@ class GeneratorLoss(nn.Module):
 
         loss_gen = loss_adv + self.l_fm * loss_fm + self.l_mel * loss_mel
 
-        return {"loss_gen": loss_gen, "gen_melspectrogram": gen_melspectrogram}
+        return {"loss_gen": loss_gen}

@@ -22,5 +22,6 @@ def collate_fn(dataset_items: list[dict]):
         batch_first=True,
     )
     result_batch["wav_path"] = [elem["wav_path"] for elem in dataset_items]
+    result_batch["sample_rate"] = dataset_items[0]["sample_rate"]
 
     return result_batch

@@ -3,7 +3,7 @@ defaults:
   - writer: wandb
   - metrics: no_metrics
   - datasets: lj_speech
-  - dataloader: example
+  - dataloader: train
   - transforms: no_transforms
   - _self_
 d_optimizer:
@@ -31,7 +31,7 @@ g_loss_function:
 trainer:
   log_step: 50
   n_epochs: 1000
-  epoch_len: 500
+  epoch_len: 400
   device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"

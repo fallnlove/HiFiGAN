@@ -9,7 +9,7 @@ class TTSModel(nn.Module):
         self.melspec_generator = melspec_generator
         self.wav_generator = wav_generator
 
-    def forward(self, *args, **kwargs) -> dict[str, Tensor]:
+    def forward(self, **kwargs) -> dict[str, Tensor]:
         """
         Args:
             *args, **kwargs : features to generate melspec(can be text or wav).
@@ -17,6 +17,6 @@ class TTSModel(nn.Module):
             output (dict[Tensor]): predicted wav (B, 1, T').
         """
 
-        melspectrogram = self.melspec_generator(*args, **kwargs)
+        melspectrogram = self.melspec_generator(**kwargs)
 
         return self.wav_generator(melspectrogram)

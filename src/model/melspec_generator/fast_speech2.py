@@ -12,11 +12,15 @@ class FastSpeech2(nn.Module):
         )
         self.fast_speech2 = fast_speech2
 
-    def forward(self, tokens: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, tokens: torch.Tensor, lengths: torch.Tensor, **batch
+    ) -> torch.Tensor:
         """
         Args:
             tokens (Tensor): tokens of text (B, len).
             lengths (Tensor): lengths of text (B,).
+        Returns:
+            melpsectrogram (Tensor): melspectrogram (B, n_mels, T)
         """
 
-        return self.fast_speech2(tokens, lengths)[0]
+        return self.fast_speech2(tokens, lengths)[0].T

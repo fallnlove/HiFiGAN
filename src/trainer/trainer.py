@@ -1,3 +1,6 @@
+from random import randint
+
+from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 
@@ -32,20 +35,33 @@ class Trainer(BaseTrainer):
         metric_funcs = self.metrics["inference"]
         if self.is_train:
             metric_funcs = self.metrics["train"]
-            self.optimizer.zero_grad()
 
         outputs = self.model(**batch)
         batch.update(outputs)
 
-        all_losses = self.criterion(**batch)
-        batch.update(all_losses)
+        outputs = self.model.wav_generator.discriminate(**batch)
+        batch.update(outputs)
 
         if self.is_train:
-            batch["loss"].backward()  # sum of all losses is always called loss
+            self.d_optimizer.zero_grad()
+            d_loss = self.d_criterion(**batch)
+            batch.update(d_loss)
             self._clip_grad_norm()
-            self.optimizer.step()
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+            self.d_optimizer.step()
+
+            self.g_optimizer.zero_grad()
+            outputs = self.model.wav_generator.discriminate(**batch)
+            batch.update(outputs)
+
+            g_loss = self.g_criterion(**batch)
+            batch.update(g_loss)
+            self._clip_grad_norm()
+            self.g_optimizer.step()
+
+            if self.d_lr_scheduler is not None:
+                self.d_lr_scheduler.step()
+            if self.g_lr_scheduler is not None:
+                self.g_lr_scheduler.step()
 
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:
@@ -72,8 +88,29 @@ class Trainer(BaseTrainer):
 
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
-            # Log Stuff
-            pass
+            self.log_spectrogram(batch["gt_melspectrogram"], "gt_melspectrogram")
+            self.log_spectrogram(batch["gen_melspectrogram"], "gen_melspectrogram")
+            self.log_audio(
+                batch["generated_wav"], batch["sample_rate"], "generated_wav"
+            )
+            self.log_audio(batch["audio"], batch["audio"], "gt_wav")
         else:
-            # Log Stuff
-            pass
+            self.log_spectrogram(batch["gt_melspectrogram"], "gt_melspectrogram")
+            self.log_spectrogram(batch["gen_melspectrogram"], "gen_melspectrogram")
+            self.log_audio(
+                batch["generated_wav"], batch["sample_rate"], "generated_wav"
+            )
+            self.log_audio(batch["audio"], batch["audio"], "gt_wav")
+
+    def log_spectrogram(self, spectrogram, name="spectrogram", **batch):
+        idx = randint(0, spectrogram.shape[0] - 1)
+
+        spectrogram_for_plot = spectrogram[idx].detach().cpu()
+        image = plot_spectrogram(spectrogram_for_plot)
+        self.writer.add_image(name, image)
+
+    def log_audio(self, audio, sample_rate, name="audio", **batch):
+        idx = randint(0, len(audio) - 1)
+
+        audio_for_logging = audio[idx].detach().cpu()
+        self.writer.add_audio(name, audio_for_logging, sample_rate=sample_rate[idx])

@@ -44,6 +44,7 @@ class BaseDataset(Dataset):
 
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
         self._index: List[dict] = index
+        self.target_sr = target_sr
 
         self.instance_transforms = instance_transforms
 
@@ -66,7 +67,11 @@ class BaseDataset(Dataset):
         wav_path = data_dict["path"]
         audio = self.load_audio(wav_path)
 
-        instance_data = {"audio": audio, "wav_path": wav_path}
+        instance_data = {
+            "audio": audio,
+            "wav_path": wav_path,
+            "sample_rate": self.target_sr,
+        }
         instance_data = self.preprocess_data(instance_data)
 
         return instance_data

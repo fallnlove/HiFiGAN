@@ -119,7 +119,8 @@ class BaseTrainer:
         self.metrics = metrics
         self.train_metrics = MetricTracker(
             *self.config.writer.loss_names,
-            "grad_norm",
+            "d_grad_norm",
+            "g_grad_norm",
             *[m.name for m in self.metrics["train"]],
             writer=self.writer,
         )
@@ -218,7 +219,10 @@ class BaseTrainer:
                 else:
                     raise e
 
-            self.train_metrics.update("grad_norm", self._get_grad_norm())
+            self.train_metrics.update(
+                "d_grad_norm", self._get_grad_norm("discriminator")
+            )
+            self.train_metrics.update("g_grad_norm", self._get_grad_norm("generator"))
 
             # log current results
             if batch_idx % self.log_step == 0:
@@ -384,19 +388,31 @@ class BaseTrainer:
             )
 
     @torch.no_grad()
-    def _get_grad_norm(self, norm_type=2):
+    def _get_grad_norm(self, model_type: str, norm_type=2):
         """
         Calculates the gradient norm for logging.
 
         Args:
+            model_type (str): generator or discriminator.
             norm_type (float | str | None): the order of the norm.
         Returns:
             total_norm (float): the calculated norm.
         """
-        parameters = self.model.parameters()
-        if isinstance(parameters, torch.Tensor):
-            parameters = [parameters]
-        parameters = [p for p in parameters if p.grad is not None]
+        if model_type == "generator":
+            parameters = self.model.wav_generator.generator.parameters()
+            if isinstance(parameters, torch.Tensor):
+                parameters = [parameters]
+            parameters = [p for p in parameters if p.grad is not None]
+        else:
+            parameters1 = self.model.wav_generator.mpd.parameters()
+            parameters2 = self.model.wav_generator.msd.parameters()
+            if isinstance(parameters1, torch.Tensor):
+                parameters1 = [parameters1]
+            if isinstance(parameters2, torch.Tensor):
+                parameters2 = [parameters2]
+            parameters = [p for p in parameters1 if p.grad is not None] + [
+                p for p in parameters2 if p.grad is not None
+            ]
         total_norm = torch.norm(
             torch.stack([torch.norm(p.grad.detach(), norm_type) for p in parameters]),
             norm_type,

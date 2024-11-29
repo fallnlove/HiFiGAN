@@ -48,21 +48,21 @@ class HiFiGAN(nn.Module):
         return self.forward(x)
 
     def discriminate(
-        self, wav_gt: Tensor, wav_gen: Tensor, **batch
+        self, audio: Tensor, generated_wav: Tensor, **batch
     ) -> dict[str, Tensor]:
         """
         Args:
-            wav_gt (Tensor): ground truth wav (B, 1, T).
-            wav_gen (Tensor): generated wav (B, 1, T).
+            audio (Tensor): ground truth wav (B, 1, T).
+            generated_wav (Tensor): generated wav (B, 1, T).
         Return:
             output (dict[Tensor]): discriminator results.
         """
 
-        mpd_gt_res, mpd_gt_feat = self.mpd(wav_gt)
-        mpd_gen_res, mpd_gen_feat = self.mpd(wav_gen)
+        mpd_gt_res, mpd_gt_feat = self.mpd(audio)
+        mpd_gen_res, mpd_gen_feat = self.mpd(generated_wav)
 
-        msd_gt_res, msd_gt_feat = self.msd(wav_gt)
-        msd_gen_res, msd_gen_feat = self.msd(wav_gen)
+        msd_gt_res, msd_gt_feat = self.msd(audio)
+        msd_gen_res, msd_gen_feat = self.msd(generated_wav)
 
         return {
             "gt_res": mpd_gt_res + msd_gt_res,

@@ -3,6 +3,7 @@ from matplotlib.pylab import ArrayLike
 from torch import Tensor, nn
 
 from src.model.hifigan.mrf_block import MRFBlock
+from src.model.melspec_generator import MelSpectrogram
 
 
 class Generator(nn.Module):
@@ -13,6 +14,8 @@ class Generator(nn.Module):
         transposed_kernels: ArrayLike,
         mrf_kernels: ArrayLike,
         dilations: ArrayLike,
+        *args,
+        **kwargs,
     ):
         super(Generator, self).__init__()
         self.preprocess = nn.Conv1d(
@@ -52,6 +55,8 @@ class Generator(nn.Module):
             nn.Tanh(),
         )
 
+        self.melspec = MelSpectrogram(*args, **kwargs)
+
     def forward(self, x: Tensor) -> Tensor:
         """
         Args:
@@ -64,4 +69,8 @@ class Generator(nn.Module):
         output = self.body(output)
         output = self.out_processing(output)
 
-        return {"generated_wav": output, "gt_melspectrogram": x}
+        return {
+            "generated_wav": output,
+            "gt_melspectrogram": x,
+            "gen_melspectrogram": self.melspec(output.squeeze(1)),
+        }
