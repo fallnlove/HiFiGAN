@@ -46,6 +46,7 @@ class Trainer(BaseTrainer):
             self.d_optimizer.zero_grad()
             d_loss = self.d_criterion(**batch)
             batch.update(d_loss)
+            batch["loss_disc"].backward()
             self._clip_grad_norm()
             self.d_optimizer.step()
 
@@ -55,6 +56,7 @@ class Trainer(BaseTrainer):
 
             g_loss = self.g_criterion(**batch)
             batch.update(g_loss)
+            batch["loss_gen"].backward()
             self._clip_grad_norm()
             self.g_optimizer.step()
 
@@ -64,8 +66,9 @@ class Trainer(BaseTrainer):
                 self.g_lr_scheduler.step()
 
         # update metrics for each loss (in case of multiple losses)
-        for loss_name in self.config.writer.loss_names:
-            metrics.update(loss_name, batch[loss_name].item())
+        if self.is_train:
+            for loss_name in self.config.writer.loss_names:
+                metrics.update(loss_name, batch[loss_name].item())
 
         for met in metric_funcs:
             metrics.update(met.name, met(**batch))
@@ -93,14 +96,14 @@ class Trainer(BaseTrainer):
             self.log_audio(
                 batch["generated_wav"], batch["sample_rate"], "generated_wav"
             )
-            self.log_audio(batch["audio"], batch["audio"], "gt_wav")
+            self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
         else:
             self.log_spectrogram(batch["gt_melspectrogram"], "gt_melspectrogram")
             self.log_spectrogram(batch["gen_melspectrogram"], "gen_melspectrogram")
             self.log_audio(
                 batch["generated_wav"], batch["sample_rate"], "generated_wav"
             )
-            self.log_audio(batch["audio"], batch["audio"], "gt_wav")
+            self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
 
     def log_spectrogram(self, spectrogram, name="spectrogram", **batch):
         idx = randint(0, spectrogram.shape[0] - 1)
@@ -113,4 +116,4 @@ class Trainer(BaseTrainer):
         idx = randint(0, len(audio) - 1)
 
         audio_for_logging = audio[idx].detach().cpu()
-        self.writer.add_audio(name, audio_for_logging, sample_rate=sample_rate[idx])
+        self.writer.add_audio(name, audio_for_logging, sample_rate=sample_rate)

@@ -1,5 +1,6 @@
+from typing import List
+
 import torch
-from matplotlib.pylab import ArrayLike
 from torch import Tensor, nn
 
 from src.model.hifigan.discriminator import MPDiscriminator, MSDiscriminator
@@ -11,9 +12,9 @@ class HiFiGAN(nn.Module):
         self,
         input_dim: int,
         hidden_dim: int,
-        transposed_kernels: ArrayLike,
-        mrf_kernels: ArrayLike,
-        dilations: ArrayLike,
+        transposed_kernels: List,
+        mrf_kernels: List,
+        dilations: List,
     ):
         super(HiFiGAN, self).__init__()
         self.generator = Generator(
@@ -57,6 +58,10 @@ class HiFiGAN(nn.Module):
         Return:
             output (dict[Tensor]): discriminator results.
         """
+        generated_wav = generated_wav.detach()
+
+        if audio.shape[2] != generated_wav.shape[2]:
+            audio, generated_wav = self.pad_(audio, generated_wav)
 
         mpd_gt_res, mpd_gt_feat = self.mpd(audio)
         mpd_gen_res, mpd_gen_feat = self.mpd(generated_wav)
@@ -70,3 +75,28 @@ class HiFiGAN(nn.Module):
             "gen_res": mpd_gen_res + msd_gen_res,
             "gen_feat": mpd_gen_feat + msd_gen_feat,
         }
+
+    def pad_(self, audio1: Tensor, audio2: Tensor) -> tuple[Tensor, Tensor]:
+        """
+        Pad melspectrograms to be same size.
+        Args:
+            audio1 (Tensor): first melspectrogram.
+            audio2 (Tensor): second melspectrogram.
+        Returns:
+            audio1 (Tensor): padded first melspectrogram.
+            audio2 (Tensor): padded second melspectrogram.
+        """
+        B, C, _ = audio1.shape
+
+        if audio1.shape[2] < audio2.shape[2]:
+            padding_size = audio2.shape[2] - audio1.shape[2]
+            padding = torch.zeros((B, C, padding_size), device=audio1.device)
+
+            audio1 = torch.cat([audio1, padding], dim=2)
+        if audio1.shape[2] > audio2.shape[2]:
+            padding_size = audio1.shape[2] - audio2.shape[2]
+            padding = torch.zeros((B, C, padding_size), device=audio2.device)
+
+            audio2 = torch.cat([audio2, padding], dim=2)
+
+        return audio1, audio2

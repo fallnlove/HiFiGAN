@@ -9,12 +9,12 @@ defaults:
 d_optimizer:
   _target_: torch.optim.AdamW
   lr: 2e-4
-  betas: (0.8, 0.99)
+  betas: [0.8, 0.99]
   weight_decay: 0.01
 g_optimizer:
   _target_: torch.optim.AdamW
   lr: 2e-4
-  betas: (0.8, 0.99)
+  betas: [0.8, 0.99]
   weight_decay: 0.01
 d_lr_scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
@@ -33,8 +33,8 @@ g_loss_function:
 trainer:
   log_step: 50
   n_epochs: 1000
-  epoch_len: 400
-  device_tensors: ["data_object", "labels"] # which tensors should be on device (ex. GPU)
+  epoch_len: 690
+  device_tensors: ["audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: False # if True, will override the previous run with the same name

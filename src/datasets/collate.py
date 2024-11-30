@@ -20,7 +20,7 @@ def collate_fn(dataset_items: list[dict]):
     result_batch["audio"] = torch.nn.utils.rnn.pad_sequence(
         [elem["audio"].squeeze() for elem in dataset_items],
         batch_first=True,
-    )
+    ).unsqueeze(1)
     result_batch["wav_path"] = [elem["wav_path"] for elem in dataset_items]
     result_batch["sample_rate"] = dataset_items[0]["sample_rate"]
 

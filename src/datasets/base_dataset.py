@@ -23,6 +23,7 @@ class BaseDataset(Dataset):
         index,
         target_sr: int = 22050,
         limit=None,
+        max_audio_length=None,
         shuffle_index=False,
         instance_transforms=None,
     ):
@@ -34,6 +35,7 @@ class BaseDataset(Dataset):
             target_sr (int): supported sample rate.
             limit (int | None): if not None, limit the total number of elements
                 in the dataset to 'limit' elements.
+            max_audio_length (int): maximum allowed audio length.
             shuffle_index (bool): if True, shuffle the index. Uses python
                 random package with seed 42.
             instance_transforms (dict[Callable] | None): transforms that
@@ -45,6 +47,7 @@ class BaseDataset(Dataset):
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
         self._index: List[dict] = index
         self.target_sr = target_sr
+        self.max_audio_length = max_audio_length
 
         self.instance_transforms = instance_transforms
 
@@ -64,7 +67,7 @@ class BaseDataset(Dataset):
                 (a single dataset element).
         """
         data_dict = self._index[ind]
-        wav_path = data_dict["path"]
+        wav_path = data_dict["wav_path"]
         audio = self.load_audio(wav_path)
 
         instance_data = {
@@ -99,7 +102,15 @@ class BaseDataset(Dataset):
         if sr != target_sr:
             audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
 
-        return audio_tensor
+        if (
+            self.max_audio_length is None
+            or audio_tensor.shape[-1] <= self.max_audio_length
+        ):
+            return audio_tensor
+
+        begin = random.randint(0, audio_tensor.shape[-1] - self.max_audio_length)
+
+        return audio_tensor[..., begin : begin + self.max_audio_length]
 
     def preprocess_data(self, instance_data):
         """
@@ -157,12 +168,13 @@ class BaseDataset(Dataset):
                 such as label and object path.
         """
         for entry in index:
-            assert "path" in entry, (
-                "Each dataset item should include field 'path'" " - path to audio file."
+            assert "wav_path" in entry, (
+                "Each dataset item should include field 'wav_path'"
+                " - path to audio file."
             )
-            assert "label" in entry, (
-                "Each dataset item should include field 'label'"
-                " - object ground-truth label."
+            assert "audio_len" in entry, (
+                "Each dataset item should include field 'audio'"
+                " - object ground-truth audio."
             )
 
     @staticmethod

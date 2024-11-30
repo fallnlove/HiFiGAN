@@ -69,20 +69,23 @@ class LJspeechDataset(BaseDataset):
         if not wavs_dir.exists():
             self._load_dataset()
 
+        flac_dirs = set()
+        for i, filename in enumerate(wavs_dir.iterdir()):
+            if part == "train" and i < 2000:
+                continue
+            if part == "val" and i >= 2000:
+                continue
+            if str(filename).endswith(".wav"):
+                flac_dirs.add(str(filename))
+
         for wav_file in tqdm(
-            wavs_dir.iterdir(), desc=f"Preparing librispeech folders: {part}"
+            list(flac_dirs), desc=f"Preparing librispeech folders: {part}"
         ):
-            if not wav_file.endswith(".wav"):
-                continue
-
-            if random.random() < (0.1 if part == "train" else 0.9):
-                continue
-
-            t_info = torchaudio.info(str(wav_file))
+            t_info = torchaudio.info(wav_file)
             length = t_info.num_frames / t_info.sample_rate
             index.append(
                 {
-                    "path": str(wav_file.absolute().resolve()),
+                    "wav_path": wav_file,
                     "audio_len": length,
                 }
             )

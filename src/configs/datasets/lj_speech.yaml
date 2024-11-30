@@ -2,6 +2,7 @@ train:
   _target_: src.datasets.LJspeechDataset
   part: "train"
   target_sr: 22050
+  max_audio_length: 8192
 val:
   _target_: src.datasets.LJspeechDataset
   part: "val"

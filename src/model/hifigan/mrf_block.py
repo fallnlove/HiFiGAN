@@ -1,10 +1,11 @@
+from typing import List
+
 import torch
-from matplotlib.pylab import ArrayLike
 from torch import Tensor, nn
 
 
 class ResBlock(nn.Module):
-    def __init__(self, channels: int, kernel_size: int, dilations: ArrayLike):
+    def __init__(self, channels: int, kernel_size: int, dilations: List):
         """
         Args:
             channels (int): number input and output channels.
@@ -48,7 +49,7 @@ class ResBlock(nn.Module):
 
 
 class MRFBlock(nn.Module):
-    def __init__(self, channels: int, kernels: ArrayLike, dilations: ArrayLike):
+    def __init__(self, channels: int, kernels: List, dilations: List):
         """
         Args:
             channels (int): number input and output channels.

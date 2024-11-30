@@ -35,7 +35,7 @@ class MPDiscriminator(nn.Module):
 
 class MSDiscriminator(nn.Module):
     def __init__(self):
-        super(MPDiscriminator, self).__init__()
+        super(MSDiscriminator, self).__init__()
 
         self.discriminators = nn.ModuleList([ScaleDiscriminator() for _ in range(3)])
 
@@ -69,22 +69,18 @@ class MSDiscriminator(nn.Module):
 
 class ScaleDiscriminator(nn.Module):
     def __init__(self):
-        super(PeriodDiscriminator, self).__init__()
+        super(ScaleDiscriminator, self).__init__()
 
         self.layers = nn.ModuleList(
             [
                 nn.Sequential(nn.Conv1d(1, 16, 15, 1, "same"), nn.LeakyReLU()),
+                nn.Sequential(nn.Conv1d(16, 64, 41, 4, 20, groups=4), nn.LeakyReLU()),
+                nn.Sequential(nn.Conv1d(64, 256, 41, 4, 20, groups=16), nn.LeakyReLU()),
                 nn.Sequential(
-                    nn.Conv1d(16, 64, 41, 4, "same", groups=4), nn.LeakyReLU()
+                    nn.Conv1d(256, 1024, 41, 4, 20, groups=64), nn.LeakyReLU()
                 ),
                 nn.Sequential(
-                    nn.Conv1d(64, 256, 41, 4, "same", groups=16), nn.LeakyReLU()
-                ),
-                nn.Sequential(
-                    nn.Conv1d(256, 1024, 41, 4, "same", groups=64), nn.LeakyReLU()
-                ),
-                nn.Sequential(
-                    nn.Conv1d(1024, 1024, 41, 4, "same", groups=256), nn.LeakyReLU()
+                    nn.Conv1d(1024, 1024, 41, 4, 20, groups=256), nn.LeakyReLU()
                 ),
                 nn.Sequential(nn.Conv1d(1024, 1024, 5, 1, "same"), nn.LeakyReLU()),
                 nn.Conv1d(1024, 1, 3, 1, "same"),
@@ -177,7 +173,7 @@ class PeriodDiscriminator(nn.Module):
             padding = torch.zeros((B, C, padding_size), device=x.device)
             x = torch.cat([x, padding], dim=2)
 
-        output = x.view(B, C, T // self.period, self.period)
+        output = x.view(B, C, -1, self.period)
         features = []
 
         for layer in self.layers:

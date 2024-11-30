@@ -1,5 +1,6 @@
+from typing import List
+
 import torch
-from matplotlib.pylab import ArrayLike
 from torch import Tensor, nn
 
 from src.model.hifigan.mrf_block import MRFBlock
@@ -11,9 +12,9 @@ class Generator(nn.Module):
         self,
         input_dim: int,
         hidden_dim: int,
-        transposed_kernels: ArrayLike,
-        mrf_kernels: ArrayLike,
-        dilations: ArrayLike,
+        transposed_kernels: List,
+        mrf_kernels: List,
+        dilations: List,
         *args,
         **kwargs,
     ):
@@ -38,7 +39,7 @@ class Generator(nn.Module):
                         stride=transposed_kernels[i] // 2,
                         padding=transposed_kernels[i] // 4,
                     ),
-                    MRFBlock(hidden_dim // (2 ** (i + 1)), mrf_kernels, dilations[i]),
+                    MRFBlock(hidden_dim // (2 ** (i + 1)), mrf_kernels, dilations),
                 )
             )
 
@@ -57,7 +58,7 @@ class Generator(nn.Module):
 
         self.melspec = MelSpectrogram(*args, **kwargs)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, gt_melspectrogram: Tensor) -> Tensor:
         """
         Args:
             x (Tensor): melspectrogram (B, F, T).
@@ -65,12 +66,47 @@ class Generator(nn.Module):
             output (dict[Tensor]): generated wav (B, 1, T').
         """
 
-        output = self.preprocess(x)
+        output = self.preprocess(gt_melspectrogram)
         output = self.body(output)
         output = self.out_processing(output)
 
+        gen_melspectrogram = self.melspec(output.squeeze(1))
+        if gt_melspectrogram.shape[2] != gen_melspectrogram.shape[2]:
+            gt_melspectrogram, gen_melspectrogram = self.pad_(
+                gt_melspectrogram, gen_melspectrogram
+            )
+
         return {
             "generated_wav": output,
-            "gt_melspectrogram": x,
-            "gen_melspectrogram": self.melspec(output.squeeze(1)),
+            "gt_melspectrogram": gt_melspectrogram,
+            "gen_melspectrogram": gen_melspectrogram,
         }
+
+    def pad_(self, mel1: Tensor, mel2: Tensor) -> tuple[Tensor, Tensor]:
+        """
+        Pad melspectrograms to be same size.
+        Args:
+            mel1 (Tensor): first melspectrogram.
+            mel2 (Tensor): second melspectrogram.
+        Returns:
+            mel1 (Tensor): padded first melspectrogram.
+            mel2 (Tensor): padded second melspectrogram.
+        """
+        B, C, _ = mel1.shape
+
+        if mel1.shape[2] < mel2.shape[2]:
+            padding_size = mel2.shape[2] - mel1.shape[2]
+            padding = torch.zeros((B, C, padding_size), device=mel1.device).fill_(
+                self.melspec.pad_value
+            )
+
+            mel1 = torch.cat([mel1, padding], dim=2)
+        if mel1.shape[2] > mel2.shape[2]:
+            padding_size = mel1.shape[2] - mel2.shape[2]
+            padding = torch.zeros((B, C, padding_size), device=mel2.device).fill_(
+                self.melspec.pad_value
+            )
+
+            mel2 = torch.cat([mel2, padding], dim=2)
+
+        return mel1, mel2
