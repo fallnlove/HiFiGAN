@@ -18,7 +18,7 @@ class ResBlock(nn.Module):
         for dilation in dilations:
             convs.append(
                 nn.Sequential(
-                    nn.PReLU(),
+                    nn.LeakyReLU(),
                     nn.Conv1d(
                         in_channels=channels,
                         out_channels=channels,

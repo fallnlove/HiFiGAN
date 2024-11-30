@@ -9,8 +9,8 @@ pandas
 wandb
 comet_ml
 hydra-core
-fairseq
 g2p_en
+wget
 
 black
 isort

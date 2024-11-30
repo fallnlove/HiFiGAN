@@ -73,16 +73,20 @@ class ScaleDiscriminator(nn.Module):
 
         self.layers = nn.ModuleList(
             [
-                nn.Sequential(nn.Conv1d(1, 16, 15, 1, "same"), nn.PReLU()),
-                nn.Sequential(nn.Conv1d(16, 64, 41, 4, "same", groups=4), nn.PReLU()),
-                nn.Sequential(nn.Conv1d(64, 256, 41, 4, "same", groups=16), nn.PReLU()),
+                nn.Sequential(nn.Conv1d(1, 16, 15, 1, "same"), nn.LeakyReLU()),
                 nn.Sequential(
-                    nn.Conv1d(256, 1024, 41, 4, "same", groups=64), nn.PReLU()
+                    nn.Conv1d(16, 64, 41, 4, "same", groups=4), nn.LeakyReLU()
                 ),
                 nn.Sequential(
-                    nn.Conv1d(1024, 1024, 41, 4, "same", groups=256), nn.PReLU()
+                    nn.Conv1d(64, 256, 41, 4, "same", groups=16), nn.LeakyReLU()
                 ),
-                nn.Sequential(nn.Conv1d(1024, 1024, 5, 1, "same"), nn.PReLU()),
+                nn.Sequential(
+                    nn.Conv1d(256, 1024, 41, 4, "same", groups=64), nn.LeakyReLU()
+                ),
+                nn.Sequential(
+                    nn.Conv1d(1024, 1024, 41, 4, "same", groups=256), nn.LeakyReLU()
+                ),
+                nn.Sequential(nn.Conv1d(1024, 1024, 5, 1, "same"), nn.LeakyReLU()),
                 nn.Conv1d(1024, 1, 3, 1, "same"),
             ]
         )
@@ -131,7 +135,7 @@ class PeriodDiscriminator(nn.Module):
                         stride=(3, 1),
                         padding=(2, 0),
                     ),
-                    nn.PReLU(),
+                    nn.LeakyReLU(),
                 )
             )
             last_channels = int(2 ** (6 + i))
@@ -144,7 +148,7 @@ class PeriodDiscriminator(nn.Module):
                     kernel_size=(5, 1),
                     padding="same",
                 ),
-                nn.PReLU(),
+                nn.LeakyReLU(),
             )
         )
         layers.append(
