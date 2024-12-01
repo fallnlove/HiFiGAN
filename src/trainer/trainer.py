@@ -101,7 +101,7 @@ class Trainer(BaseTrainer):
         idx = randint(0, len(gt_melspectrogram) - 1)
 
         gt_spectrogram = gt_melspectrogram[idx].detach().cpu()
-        gen_spectrogram = gt_melspectrogram[idx].detach().cpu()
+        gen_spectrogram = gen_melspectrogram[idx].detach().cpu()
         gt_image = plot_spectrogram(gt_spectrogram)
         gen_image = plot_spectrogram(gen_spectrogram)
 
