@@ -92,16 +92,10 @@ class Trainer(BaseTrainer):
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
             self.log_spectrogram(**batch)
-            self.log_audio(
-                batch["generated_wav"], batch["sample_rate"], "generated_wav"
-            )
-            self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
+            self.log_audio(**batch)
         else:
             self.log_spectrogram(**batch)
-            self.log_audio(
-                batch["generated_wav"], batch["sample_rate"], "generated_wav"
-            )
-            self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
+            self.log_audio(**batch)
 
     def log_spectrogram(self, gt_melspectrogram, gen_melspectrogram, **batch):
         idx = randint(0, len(gt_melspectrogram) - 1)
