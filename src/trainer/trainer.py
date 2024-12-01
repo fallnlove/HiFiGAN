@@ -91,29 +91,34 @@ class Trainer(BaseTrainer):
 
         # logging scheme might be different for different partitions
         if mode == "train":  # the method is called only every self.log_step steps
-            self.log_spectrogram(batch["gt_melspectrogram"], "gt_melspectrogram")
-            self.log_spectrogram(batch["gen_melspectrogram"], "gen_melspectrogram")
+            self.log_spectrogram(**batch)
             self.log_audio(
                 batch["generated_wav"], batch["sample_rate"], "generated_wav"
             )
             self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
         else:
-            self.log_spectrogram(batch["gt_melspectrogram"], "gt_melspectrogram")
-            self.log_spectrogram(batch["gen_melspectrogram"], "gen_melspectrogram")
+            self.log_spectrogram(**batch)
             self.log_audio(
                 batch["generated_wav"], batch["sample_rate"], "generated_wav"
             )
             self.log_audio(batch["audio"], batch["sample_rate"], "gt_wav")
 
-    def log_spectrogram(self, spectrogram, name="spectrogram", **batch):
-        idx = randint(0, spectrogram.shape[0] - 1)
+    def log_spectrogram(self, gt_melspectrogram, gen_melspectrogram, **batch):
+        idx = randint(0, len(gt_melspectrogram) - 1)
 
-        spectrogram_for_plot = spectrogram[idx].detach().cpu()
-        image = plot_spectrogram(spectrogram_for_plot)
-        self.writer.add_image(name, image)
+        gt_spectrogram = gt_melspectrogram[idx].detach().cpu()
+        gen_spectrogram = gt_melspectrogram[idx].detach().cpu()
+        gt_image = plot_spectrogram(gt_spectrogram)
+        gen_image = plot_spectrogram(gen_spectrogram)
 
-    def log_audio(self, audio, sample_rate, name="audio", **batch):
+        self.writer.add_image("gt_melspectrogram", gt_image)
+        self.writer.add_image("gen_spectrogram", gen_image)
+
+    def log_audio(self, audio, generated_wav, sample_rate, **batch):
         idx = randint(0, len(audio) - 1)
 
-        audio_for_logging = audio[idx].detach().cpu()
-        self.writer.add_audio(name, audio_for_logging, sample_rate=sample_rate)
+        gt_wav = audio[idx].detach().cpu()
+        gen_wav = generated_wav[idx].detach().cpu()
+
+        self.writer.add_audio("gt_wav", gt_wav, sample_rate=sample_rate)
+        self.writer.add_audio("gen_wav", gen_wav, sample_rate=sample_rate)

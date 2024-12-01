@@ -489,7 +489,7 @@ class BaseTrainer:
             "arch": arch,
             "epoch": epoch,
             "state_dict": self.model.state_dict(),
-            "d_optimizer": self.g_optimizer.state_dict(),
+            "d_optimizer": self.d_optimizer.state_dict(),
             "g_optimizer": self.g_optimizer.state_dict(),
             "d_lr_scheduler": self.d_lr_scheduler.state_dict(),
             "g_lr_scheduler": self.g_lr_scheduler.state_dict(),
