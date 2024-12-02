@@ -19,8 +19,8 @@ class ResBlock(nn.Module):
         for dilation in dilations:
             layer = []
             for dil in dilation:
+                layer.append(nn.LeakyReLU(0.1))
                 layer.append(
-                    nn.LeakyReLU(0.1),
                     nn.Conv1d(
                         in_channels=channels,
                         out_channels=channels,
