@@ -15,18 +15,29 @@ class HiFiGAN(nn.Module):
         transposed_kernels: List,
         mrf_kernels: List,
         dilations: List,
+        relu_constant: float,
     ):
+        """
+        Args:
+            input_dim (int): number of mels in melspectrogram (n_mels).
+            hidden_dim (int): hidden dimension in network.
+            transposed_kernels (List): 1D list of kernel sizes.
+            mrf_kernels (List): 1D list of mrf kernel sizes.
+            dilations (List): 3D list of dilations.
+            relu_constant (float): constant for LeakyReLU.
+        """
         super(HiFiGAN, self).__init__()
         self.generator = Generator(
-            input_dim,
-            hidden_dim,
-            transposed_kernels,
-            mrf_kernels,
-            dilations,
+            input_dim=input_dim,
+            hidden_dim=hidden_dim,
+            transposed_kernels=transposed_kernels,
+            mrf_kernels=mrf_kernels,
+            dilations=dilations,
+            relu_constant=relu_constant,
         )
 
-        self.mpd = MPDiscriminator()
-        self.msd = MSDiscriminator()
+        self.mpd = MPDiscriminator(relu_constant=relu_constant)
+        self.msd = MSDiscriminator(relu_constant=relu_constant)
 
     def forward(self, x: Tensor, **batch) -> dict[str, Tensor]:
         """

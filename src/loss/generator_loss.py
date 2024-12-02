@@ -51,4 +51,9 @@ class GeneratorLoss(nn.Module):
 
         loss_gen = loss_adv + self.l_fm * loss_fm + self.l_mel * loss_mel
 
-        return {"loss_gen": loss_gen}
+        return {
+            "loss_gen": loss_gen,
+            "loss_adv": loss_adv,
+            "loss_fm": loss_fm,
+            "loss_mel": loss_mel,
+        }

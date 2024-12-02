@@ -15,9 +15,19 @@ class Generator(nn.Module):
         transposed_kernels: List,
         mrf_kernels: List,
         dilations: List,
+        relu_constant: float,
         *args,
         **kwargs,
     ):
+        """
+        Args:
+            input_dim (int): number of mels in melspectrogram (n_mels).
+            hidden_dim (int): hidden dimension in network.
+            transposed_kernels (List): 1D list of kernel sizes.
+            mrf_kernels (List): 1D list of mrf kernel sizes.
+            dilations (List): 3D list of dilations.
+            relu_constant (float): constant for LeakyReLU.
+        """
         super(Generator, self).__init__()
         self.preprocess = nn.Conv1d(
             in_channels=input_dim,
@@ -31,7 +41,7 @@ class Generator(nn.Module):
         for i in range(len(transposed_kernels)):
             body.append(
                 nn.Sequential(
-                    nn.LeakyReLU(0.1),
+                    nn.LeakyReLU(relu_constant),
                     nn.ConvTranspose1d(
                         in_channels=hidden_dim // (2 ** (i)),
                         out_channels=hidden_dim // (2 ** (i + 1)),
@@ -39,14 +49,19 @@ class Generator(nn.Module):
                         stride=transposed_kernels[i] // 2,
                         padding=transposed_kernels[i] // 4,
                     ),
-                    MRFBlock(hidden_dim // (2 ** (i + 1)), mrf_kernels, dilations),
+                    MRFBlock(
+                        hidden_dim // (2 ** (i + 1)),
+                        mrf_kernels,
+                        dilations,
+                        relu_constant,
+                    ),
                 )
             )
 
         self.body = nn.Sequential(*body)
 
         self.out_processing = nn.Sequential(
-            nn.LeakyReLU(0.1),
+            nn.LeakyReLU(relu_constant),
             nn.Conv1d(
                 in_channels=hidden_dim // (2 ** len(transposed_kernels)),
                 out_channels=1,
@@ -84,7 +99,7 @@ class Generator(nn.Module):
 
     def pad_(self, mel1: Tensor, mel2: Tensor) -> tuple[Tensor, Tensor]:
         """
-        Pad melspectrograms to be same size.
+        Pad melspectrograms to be the same size.
         Args:
             mel1 (Tensor): first melspectrogram.
             mel2 (Tensor): second melspectrogram.

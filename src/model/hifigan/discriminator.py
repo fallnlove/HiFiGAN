@@ -3,15 +3,16 @@ from torch import Tensor, nn
 
 
 class MPDiscriminator(nn.Module):
-    def __init__(self, periods: list = [2, 3, 5, 7, 11]):
+    def __init__(self, relu_constant: float, periods: list = [2, 3, 5, 7, 11]):
         """
         Args:
+            relu_constant (float): constant for LeakyReLU.
             periods (list[int]): period to reshape wav.
         """
         super(MPDiscriminator, self).__init__()
 
         self.discriminators = nn.ModuleList(
-            [PeriodDiscriminator(period) for period in periods]
+            [PeriodDiscriminator(period, relu_constant) for period in periods]
         )
 
     def forward(self, x: Tensor) -> tuple[Tensor, Tensor]:
@@ -34,10 +35,16 @@ class MPDiscriminator(nn.Module):
 
 
 class MSDiscriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, relu_constant: float):
+        """
+        Args:
+            relu_constant (float): constant for LeakyReLU.
+        """
         super(MSDiscriminator, self).__init__()
 
-        self.discriminators = nn.ModuleList([ScaleDiscriminator() for _ in range(3)])
+        self.discriminators = nn.ModuleList(
+            [ScaleDiscriminator(relu_constant) for _ in range(3)]
+        )
 
         self.upsampling = nn.ModuleList(
             [
@@ -68,25 +75,36 @@ class MSDiscriminator(nn.Module):
 
 
 class ScaleDiscriminator(nn.Module):
-    def __init__(self):
+    def __init__(self, relu_constant):
+        """
+        Args:
+            relu_constant (float): constant for LeakyReLU.
+        """
         super(ScaleDiscriminator, self).__init__()
 
         self.layers = nn.ModuleList(
             [
-                nn.Sequential(nn.Conv1d(1, 16, 15, 1, "same"), nn.LeakyReLU(0.1)),
                 nn.Sequential(
-                    nn.Conv1d(16, 64, 41, 4, 20, groups=4), nn.LeakyReLU(0.1)
+                    nn.Conv1d(1, 16, 15, 1, "same"), nn.LeakyReLU(relu_constant)
                 ),
                 nn.Sequential(
-                    nn.Conv1d(64, 256, 41, 4, 20, groups=16), nn.LeakyReLU(0.1)
+                    nn.Conv1d(16, 64, 41, 4, 20, groups=4), nn.LeakyReLU(relu_constant)
                 ),
                 nn.Sequential(
-                    nn.Conv1d(256, 1024, 41, 4, 20, groups=64), nn.LeakyReLU(0.1)
+                    nn.Conv1d(64, 256, 41, 4, 20, groups=16),
+                    nn.LeakyReLU(relu_constant),
                 ),
                 nn.Sequential(
-                    nn.Conv1d(1024, 1024, 41, 4, 20, groups=256), nn.LeakyReLU(0.1)
+                    nn.Conv1d(256, 1024, 41, 4, 20, groups=64),
+                    nn.LeakyReLU(relu_constant),
                 ),
-                nn.Sequential(nn.Conv1d(1024, 1024, 5, 1, "same"), nn.LeakyReLU(0.1)),
+                nn.Sequential(
+                    nn.Conv1d(1024, 1024, 41, 4, 20, groups=256),
+                    nn.LeakyReLU(relu_constant),
+                ),
+                nn.Sequential(
+                    nn.Conv1d(1024, 1024, 5, 1, "same"), nn.LeakyReLU(relu_constant)
+                ),
                 nn.Conv1d(1024, 1, 3, 1, "same"),
             ]
         )
@@ -113,10 +131,11 @@ class ScaleDiscriminator(nn.Module):
 
 
 class PeriodDiscriminator(nn.Module):
-    def __init__(self, period: int):
+    def __init__(self, period: int, relu_constant: float):
         """
         Args:
             period (int): period to reshape wav.
+            relu_constant (float): constant for LeakyReLU.
         """
         super(PeriodDiscriminator, self).__init__()
 
@@ -135,7 +154,7 @@ class PeriodDiscriminator(nn.Module):
                         stride=(3, 1),
                         padding=(2, 0),
                     ),
-                    nn.LeakyReLU(0.1),
+                    nn.LeakyReLU(relu_constant),
                 )
             )
             last_channels = int(2 ** (6 + i))
@@ -148,7 +167,7 @@ class PeriodDiscriminator(nn.Module):
                     kernel_size=(5, 1),
                     padding="same",
                 ),
-                nn.LeakyReLU(0.1),
+                nn.LeakyReLU(relu_constant),
             )
         )
         layers.append(

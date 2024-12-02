@@ -5,12 +5,15 @@ from torch import Tensor, nn
 
 
 class ResBlock(nn.Module):
-    def __init__(self, channels: int, kernel_size: int, dilations: List):
+    def __init__(
+        self, channels: int, kernel_size: int, dilations: List, relu_constant: float
+    ):
         """
         Args:
             channels (int): number input and output channels.
             kernel_size (int): kernel_size.
             dilations (ArrayLike): 1D array of kernels.
+            relu_constant (float): constant for LeakyReLU.
         """
         super(ResBlock, self).__init__()
 
@@ -19,7 +22,7 @@ class ResBlock(nn.Module):
         for dilation in dilations:
             layer = []
             for dil in dilation:
-                layer.append(nn.LeakyReLU(0.1))
+                layer.append(nn.LeakyReLU(relu_constant))
                 layer.append(
                     nn.Conv1d(
                         in_channels=channels,
@@ -50,18 +53,21 @@ class ResBlock(nn.Module):
 
 
 class MRFBlock(nn.Module):
-    def __init__(self, channels: int, kernels: List, dilations: List):
+    def __init__(
+        self, channels: int, kernels: List, dilations: List, relu_constant: float
+    ):
         """
         Args:
             channels (int): number input and output channels.
             kernels (ArrayLike): 1D array of kernel sizes.
             dilations (ArrayLike): 2D array of kernels.
+            relu_constant (float): constant for LeakyReLU.
         """
         super(MRFBlock, self).__init__()
 
         self.blocks = nn.ModuleList(
             [
-                ResBlock(channels, kernel_size, dilation)
+                ResBlock(channels, kernel_size, dilation, relu_constant)
                 for kernel_size, dilation in zip(kernels, dilations)
             ]
         )
