@@ -31,7 +31,7 @@ class Generator(nn.Module):
         for i in range(len(transposed_kernels)):
             body.append(
                 nn.Sequential(
-                    nn.LeakyReLU(),
+                    nn.LeakyReLU(0.1),
                     nn.ConvTranspose1d(
                         in_channels=hidden_dim // (2 ** (i)),
                         out_channels=hidden_dim // (2 ** (i + 1)),
@@ -46,7 +46,7 @@ class Generator(nn.Module):
         self.body = nn.Sequential(*body)
 
         self.out_processing = nn.Sequential(
-            nn.LeakyReLU(),
+            nn.LeakyReLU(0.1),
             nn.Conv1d(
                 in_channels=hidden_dim // (2 ** len(transposed_kernels)),
                 out_channels=1,

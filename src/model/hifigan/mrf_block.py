@@ -17,18 +17,19 @@ class ResBlock(nn.Module):
         convs = []
 
         for dilation in dilations:
-            convs.append(
-                nn.Sequential(
-                    nn.LeakyReLU(),
+            layer = []
+            for dil in dilation:
+                layer.append(
+                    nn.LeakyReLU(0.1),
                     nn.Conv1d(
                         in_channels=channels,
                         out_channels=channels,
                         kernel_size=kernel_size,
-                        dilation=dilation,
+                        dilation=dil,
                         padding="same",
                     ),
                 )
-            )
+            convs.append(nn.Sequential(*layer))
 
         self.convs = nn.ModuleList(convs)
 
@@ -78,4 +79,4 @@ class MRFBlock(nn.Module):
         for layer in self.blocks:
             output = output + layer(x)
 
-        return output
+        return output / len(self.blocks)
