@@ -60,16 +60,18 @@ class HiFiGAN(nn.Module):
         return self.forward(x)
 
     def discriminate(
-        self, audio: Tensor, generated_wav: Tensor, **batch
+        self, audio: Tensor, generated_wav: Tensor, detach: bool = False, **batch
     ) -> dict[str, Tensor]:
         """
         Args:
             audio (Tensor): ground truth wav (B, 1, T).
             generated_wav (Tensor): generated wav (B, 1, T).
+            detach (Tensor): detach generated wav (default: False).
         Return:
             output (dict[Tensor]): discriminator results.
         """
-        generated_wav = generated_wav
+        if detach:
+            generated_wav = generated_wav.detach()
 
         if audio.shape[2] != generated_wav.shape[2]:
             audio, generated_wav = self.pad_(audio, generated_wav)
