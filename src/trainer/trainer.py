@@ -39,6 +39,7 @@ class Trainer(BaseTrainer):
         outputs = self.model(**batch)
         batch.update(outputs)
 
+        batch["generated_wav"] = batch["generated_wav"].detach()
         outputs = self.model.wav_generator.discriminate(**batch)
         batch.update(outputs)
 

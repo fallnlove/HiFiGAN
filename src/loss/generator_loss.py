@@ -47,7 +47,7 @@ class GeneratorLoss(nn.Module):
         loss_fm = 0
 
         for gt, gen in zip(gt_feat, gen_feat):
-            loss_fm += torch.mean(torch.abs(gt - gen))
+            loss_fm += self.l1(gt, gen)
 
         loss_gen = loss_adv + self.l_fm * loss_fm + self.l_mel * loss_mel
 
