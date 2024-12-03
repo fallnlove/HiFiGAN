@@ -70,17 +70,19 @@ class HiFiGAN(nn.Module):
         Return:
             output (dict[Tensor]): discriminator results.
         """
-        if detach:
-            generated_wav = generated_wav.detach()
 
         if audio.shape[2] != generated_wav.shape[2]:
             audio, generated_wav = self.pad_(audio, generated_wav)
 
         mpd_gt_res, mpd_gt_feat = self.mpd(audio)
-        mpd_gen_res, mpd_gen_feat = self.mpd(generated_wav)
+        mpd_gen_res, mpd_gen_feat = self.mpd(
+            generated_wav if not detach else generated_wav.detach()
+        )
 
         msd_gt_res, msd_gt_feat = self.msd(audio)
-        msd_gen_res, msd_gen_feat = self.msd(generated_wav)
+        msd_gen_res, msd_gen_feat = self.msd(
+            generated_wav if not detach else generated_wav.detach()
+        )
 
         return {
             "gt_res": mpd_gt_res + msd_gt_res,
