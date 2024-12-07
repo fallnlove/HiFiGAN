@@ -10,11 +10,11 @@ wandb
 comet_ml
 hydra-core
 g2p_en
-transformers
 wget
 gdown
 
 git+https://github.com/AndreevP/wvmos
+git+https://github.com/majiayu000/fairseq
 
 black
 isort

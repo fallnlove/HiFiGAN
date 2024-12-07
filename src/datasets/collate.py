@@ -16,7 +16,7 @@ def collate_fn(dataset_items: list[dict]):
 
     result_batch = {}
 
-    if "path" in dataset_items[0].keys():
+    if "audio" in dataset_items[0].keys():
         result_batch["audio"] = torch.nn.utils.rnn.pad_sequence(
             [elem["audio"].squeeze() for elem in dataset_items],
             batch_first=True,

@@ -25,7 +25,7 @@ class FastSpeech2(nn.Module):
         """
 
         tokens = self.tokenizer(text, return_tensors="pt", padding=True).to(
-            self._device()
+            self._device
         )
 
         return self.model(**tokens, return_dict=True)["spectrogram"].transpose(-1, -2)

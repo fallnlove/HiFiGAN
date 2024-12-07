@@ -8,6 +8,6 @@ defaults:
 inferencer:
   device_tensors: [] # which tensors should be on device (ex. GPU)
   device: auto # device name or "auto"
-  save_path: "lj_speech_inference" # any name here, can be a dataset name
+  save_path: "lj_text_inference" # any name here, can be a dataset name
   seed: 1
   from_pretrained: "saved/fast_speech2_hifi_gan.pth" # path to the pretrained model
