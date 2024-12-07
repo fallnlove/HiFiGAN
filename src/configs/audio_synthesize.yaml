@@ -1,0 +1,13 @@
+defaults:
+  - model: hifigan
+  - metrics: no_metrics
+  - datasets: audio_inference
+  - dataloader: inference
+  - transforms: no_transforms
+  - _self_
+inferencer:
+  device_tensors: ["audio"] # which tensors should be on device (ex. GPU)
+  device: auto # device name or "auto"
+  save_path: "audio_inference" # any name here, can be a dataset name
+  seed: 1
+  from_pretrained: "saved/model_best.pth" # path to the pretrained model

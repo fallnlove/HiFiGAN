@@ -10,7 +10,11 @@ wandb
 comet_ml
 hydra-core
 g2p_en
+transformers
 wget
+gdown
+
+git+https://github.com/AndreevP/wvmos
 
 black
 isort

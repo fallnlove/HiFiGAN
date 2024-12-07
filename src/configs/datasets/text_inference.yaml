@@ -1,0 +1,5 @@
+inference:
+  _target_: src.datasets.CustomTextDataset
+  data_dir: null
+  text: null
+  target_sr: 22050

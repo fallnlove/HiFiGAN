@@ -32,7 +32,7 @@ g_loss_function:
   l_mel: 45
 trainer:
   log_step: 50
-  n_epochs: 1000
+  n_epochs: 100
   epoch_len: 690
   device_tensors: ["audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml

@@ -69,6 +69,10 @@ class LJspeechDataset(BaseDataset):
         if not wavs_dir.exists():
             self._load_dataset()
 
+        with open(self._data_dir / "metadata.csv") as f:
+            texts = [i.split("|") for i in f.read().split("\n")]
+        metadata = {k: v for k, _, v in texts}
+
         flac_dirs = set()
         for i, filename in enumerate(wavs_dir.iterdir()):
             if part == "train" and i < 2000:
@@ -85,8 +89,9 @@ class LJspeechDataset(BaseDataset):
             length = t_info.num_frames / t_info.sample_rate
             index.append(
                 {
-                    "wav_path": wav_file,
+                    "path": wav_file,
                     "audio_len": length,
+                    "text": metadata[Path(wav_file).name],
                 }
             )
         return index

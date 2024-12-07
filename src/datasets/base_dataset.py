@@ -67,14 +67,15 @@ class BaseDataset(Dataset):
                 (a single dataset element).
         """
         data_dict = self._index[ind]
-        wav_path = data_dict["wav_path"]
-        audio = self.load_audio(wav_path)
+        path: str = data_dict["path"]
 
         instance_data = {
-            "audio": audio,
-            "wav_path": wav_path,
+            "path": path,
+            "text": data_dict["text"],
             "sample_rate": self.target_sr,
         }
+        if path.endswith(".wav"):
+            instance_data["audio"] = self.load_audio(path)
         instance_data = self.preprocess_data(instance_data)
 
         return instance_data
@@ -168,11 +169,11 @@ class BaseDataset(Dataset):
                 such as label and object path.
         """
         for entry in index:
-            assert "wav_path" in entry, (
+            assert "path" in entry, (
                 "Each dataset item should include field 'wav_path'"
                 " - path to audio file."
             )
-            assert "audio_len" in entry, (
+            assert "audio" in entry or "text" in entry, (
                 "Each dataset item should include field 'audio'"
                 " - object ground-truth audio."
             )

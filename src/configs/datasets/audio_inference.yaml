@@ -1,0 +1,4 @@
+inference:
+  _target_: src.datasets.CustomAudioDataset
+  data_dir: null
+  target_sr: 22050

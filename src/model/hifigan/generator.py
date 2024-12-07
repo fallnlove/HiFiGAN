@@ -72,6 +72,7 @@ class Generator(nn.Module):
         )
 
         self.melspec = MelSpectrogram(*args, **kwargs)
+        self.transposed_kernels = transposed_kernels
 
     def forward(self, gt_melspectrogram: Tensor) -> Tensor:
         """
@@ -125,3 +126,23 @@ class Generator(nn.Module):
             mel2 = torch.cat([mel2, padding], dim=2)
 
         return mel1, mel2
+
+    def length_(self, lengths: Tensor) -> Tensor:
+        """
+        Return wav lengths after HiFiGAN processing.
+        Args:
+            lengths (Tensor): input lengths.
+        Returns:
+            output_lengths (Tensor): output lengths.
+        """
+
+        output_lengths = lengths
+
+        for kernel_size in self.transposed_kernels:
+            output_lengths = (
+                (output_lengths - 1) * (kernel_size // 2)
+                - 2 * (kernel_size // 4)
+                + kernel_size
+            )
+
+        return output_lengths
