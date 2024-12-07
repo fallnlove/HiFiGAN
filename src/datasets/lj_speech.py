@@ -70,7 +70,7 @@ class LJspeechDataset(BaseDataset):
             self._load_dataset()
 
         with open(self._data_dir / "metadata.csv") as f:
-            texts = [i.split("|") for i in f.read().split("\n")]
+            texts = [i.split("|") for i in f.read().split("\n")][:-1]
         metadata = {k: v for k, _, v in texts}
 
         flac_dirs = set()
@@ -91,7 +91,7 @@ class LJspeechDataset(BaseDataset):
                 {
                     "path": wav_file,
                     "audio_len": length,
-                    "text": metadata[Path(wav_file).name],
+                    "text": metadata[Path(wav_file).stem],
                 }
             )
         return index

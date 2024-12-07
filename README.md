@@ -11,7 +11,7 @@ pip install -r ./requirements.txt
 2. Download checkpoints and pre-trained model
 
 ```bash
-python3 scripts/download_model.py
+python3 src/scripts/download_model.py
 ```
 
 ## Training
@@ -19,7 +19,7 @@ python3 scripts/download_model.py
 If you want to reproduce training process run following command.
 
 ```bash
-pyhton3 train.py -cn=train
+python3 train.py -cn=train
 ```
 
 ## Inference
@@ -29,13 +29,13 @@ There are two ways to inference HiFiGAN on [LJSpeech](https://keithito.com/LJ-Sp
 1. Generate wav file from melspectrogram of the ground truth wav.
 
 ```bash
-pyhton3 synthesize.py -cn=lj_speech_synthesize
+python3 synthesize.py -cn=lj_speech_synthesize
 ```
 
 2. Generate wav file from text using FastSpeech2 model.
 
 ```bash
-pyhton3 synthesize.py -cn=lj_text_synthesize
+python3 synthesize.py -cn=lj_text_synthesize
 ```
 
 > [!NOTE]
@@ -73,7 +73,7 @@ Note: `PATH_TO_DATASET` should contains audio files in `wav` format.
 Run following command to calculate WV-MOS of generated audio.
 
 ```bash
-python3 scripts/wv_mos.py +data_dir=PATH_TO_GEN_AUDIO
+python3 src/scripts/wv_mos.py +data_dir=PATH_TO_GEN_AUDIO
 ```
 
 ## Credits
