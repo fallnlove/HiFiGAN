@@ -10,4 +10,4 @@ inferencer:
   device: auto # device name or "auto"
   save_path: "text_inference" # any name here, can be a dataset name
   seed: 1
-  from_pretrained: "saved/model_best.pth" # path to the pretrained model
+  from_pretrained: "saved/fast_speech2_hifi_gan.pth" # path to the pretrained model
