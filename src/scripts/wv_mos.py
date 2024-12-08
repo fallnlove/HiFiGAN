@@ -13,7 +13,7 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None)
+@hydra.main()
 def main(config):
     """
     Main script for calculate WV-MOS.

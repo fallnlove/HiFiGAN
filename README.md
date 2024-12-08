@@ -5,6 +5,7 @@
 1. Install dependencies
 
 ```bash
+pip install pip==22.0
 pip install -r ./requirements.txt
 ```
 
