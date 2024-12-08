@@ -5,7 +5,6 @@
 1. Install dependencies
 
 ```bash
-pip install pip==22.0
 pip install -r ./requirements.txt
 ```
 
@@ -33,7 +32,7 @@ There are two ways to inference HiFiGAN on [LJSpeech](https://keithito.com/LJ-Sp
 python3 synthesize.py -cn=lj_speech_synthesize
 ```
 
-2. Generate wav file from text using FastSpeech2 model.
+2. Generate wav file from text using Tacotron2 model.
 
 ```bash
 python3 synthesize.py -cn=lj_text_synthesize
@@ -42,9 +41,12 @@ python3 synthesize.py -cn=lj_text_synthesize
 > [!NOTE]
 > Generated audio saved in `data/saved` dir. To customize save path use `inferencer.save_path` option.
 
+> [!NOTE]
+> Use option `inferencer.from_pretrained` to provide path to pre-trained model
+
 ## Custom dataset inference
 
-Run following commands to inference HiFiGAN with FastSpeech2 on text data.
+Run following commands to inference HiFiGAN with Tacotron2 on text data.
 
 1. Inference model in custom dataset.
 
@@ -80,7 +82,7 @@ python3 src/scripts/wv_mos.py +data_dir=PATH_TO_GEN_AUDIO
 ## Credits
 
 I use [Project Template](https://github.com/Blinorot/pytorch_project_template) for well-structured code.
-For TTS inference I use FastSpeech2Conformer pre-trained model from [HuggingFace](https://huggingface.co/docs/transformers/model_doc/fastspeech2_conformer#-transformers-usage).
+For TTS inference I use Tacotron2 pre-trained model from Torch.
 
 ## License
 

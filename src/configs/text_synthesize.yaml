@@ -1,5 +1,5 @@
 defaults:
-  - model: fast_speech2_hifigan
+  - model: tacotron2_hifigan
   - metrics: no_metrics
   - datasets: text_inference
   - dataloader: inference

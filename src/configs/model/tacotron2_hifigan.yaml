@@ -1,6 +1,6 @@
 _target_: src.model.TTSModel
 melspec_generator:
-  _target_: src.model.FastSpeech2
+  _target_: src.model.Tacotron2
 wav_generator:
   _target_: src.model.HiFiGAN
   input_dim: 80
