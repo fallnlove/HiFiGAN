@@ -8,7 +8,7 @@ from wvmos import get_wvmos
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main()
+@hydra.main(version_base=None)
 def main(config):
     """
     Main script for calculate WV-MOS.

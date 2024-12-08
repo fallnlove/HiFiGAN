@@ -8,9 +8,11 @@ matplotlib
 pandas
 wandb
 comet_ml
+hydra-core
 g2p_en
 wget
 gdown
+deep-phonemizer
 
 git+https://github.com/AndreevP/wvmos
 

@@ -12,7 +12,9 @@ from src.utils.io_utils import ROOT_PATH
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(config_path="src/configs", config_name="lj_speech_synthesize")
+@hydra.main(
+    version_base=None, config_path="src/configs", config_name="lj_speech_synthesize"
+)
 def main(config):
     """
     Main script for inference. Instantiates the model, metrics, and

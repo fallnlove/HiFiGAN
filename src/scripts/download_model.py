@@ -4,7 +4,7 @@ import gdown
 
 URLS = {
     "https://drive.google.com/uc?id=1KiznzcX7TzlviiKusinPWw1ixLPf92E0": "saved/hifi_gan.pth",
-    "https://drive.google.com/uc?id=1CLwHYUhgsaFOB9MvoMws0xPT4LH7wjuD": "saved/fast_speech2_hifi_gan.pth",
+    "https://drive.google.com/uc?id=1INnE6QcarEn5H8-FFlZtg05cZwDf92FY": "saved/tacotron2_hifi_gan.pth",
 }
 
 
