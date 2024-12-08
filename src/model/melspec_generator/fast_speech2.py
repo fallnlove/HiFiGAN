@@ -1,20 +1,20 @@
 from typing import List
 
 import torch
+from fairseq.checkpoint_utils import load_model_ensemble_and_task_from_hf_hub
+from fairseq.models.text_to_speech.hub_interface import TTSHubInterface
 from torch import nn
-from transformers import FastSpeech2ConformerModel, FastSpeech2ConformerTokenizer
 
 
 class FastSpeech2(nn.Module):
     def __init__(self):
         super(FastSpeech2, self).__init__()
 
-        self.tokenizer = FastSpeech2ConformerTokenizer.from_pretrained(
-            "espnet/fastspeech2_conformer"
+        models, _, task = load_model_ensemble_and_task_from_hf_hub(
+            "facebook/fastspeech2-en-ljspeech", arg_overrides={"fp16": False}
         )
-        self.model = FastSpeech2ConformerModel.from_pretrained(
-            "espnet/fastspeech2_conformer"
-        )
+        self.model = models[0]
+        self.task = task
 
     def forward(self, text: List[str], **batch) -> torch.Tensor:
         """
@@ -24,11 +24,13 @@ class FastSpeech2(nn.Module):
             melpsectrogram (Tensor): melspectrogram (B, n_mels, T)
         """
 
-        tokens = self.tokenizer(text, return_tensors="pt", padding=True).to(
+        tokens = TTSHubInterface.get_model_input(self.task, text)["net_input"].to(
             self._device
         )
 
-        return self.model(**tokens, return_dict=True)["spectrogram"].transpose(-1, -2)
+        return self.model(tokens["src_tokens"], tokens["src_lengths"])[0].transpose(
+            -1, -2
+        )
 
     @property
     def _device(self):
